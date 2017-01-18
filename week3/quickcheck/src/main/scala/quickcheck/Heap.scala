@@ -19,12 +19,10 @@ trait Heap {
   def isEmpty(h: H): Boolean // whether the given heap h is empty
 
   def insert(x: A, h: H): H // the heap resulting from inserting x into h
-  def insertOrig(x: A, h: H): H // the heap resulting from inserting x into h
   def meld(h1: H, h2: H): H // the heap resulting from merging h1 and h2
 
   def findMin(h: H): A // a minimum of the heap h
   def deleteMin(h: H): H // a heap resulting from deleting a minimum of h
-  def deleteMinOrig(h: H): H // a heap resulting from deleting a minimum of h
 }
 
 // Figure 3, page 7
@@ -38,24 +36,16 @@ trait BinomialHeap extends Heap {
   protected def rank(t: Node) = t.r
   protected def link(t1: Node, t2: Node): Node = // t1.r==t2.r
     if (ord.lteq(t1.x,t2.x)) Node(t1.x, t1.r+1, t2::t1.c) else Node(t2.x, t2.r+1, t1::t2.c)
-  protected def linkOrig(t1: Node, t2: Node): Node = // t1.r==t2.r
-    if (ord.lteq(t1.x,t2.x)) Node(t1.x, t1.r+1, t2::t1.c) else Node(t2.x, t2.r+1, t1::t2.c)
   protected def ins(t: Node, ts: H): H = ts match {
     case Nil => List(t)
     case tp::ts => // t.r<=tp.r
       if (t.r<tp.r) t::tp::ts else ins(link(t, tp), ts)
-  }
-  protected def insOrig(t: Node, ts: H): H = ts match {
-    case Nil => List(t)
-    case tp::ts => // t.r<=tp.r
-      if (t.r<tp.r) t::tp::ts else insOrig(linkOrig(t, tp), ts)
   }
 
   override def empty = Nil
   override def isEmpty(ts: H) = ts.isEmpty
 
   override def insert(x: A, ts: H) = ins(Node(x,0,Nil), ts)
-  override def insertOrig(x: A, ts: H) = insOrig(Node(x,0,Nil), ts)
   override def meld(ts1: H, ts2: H) = (ts1, ts2) match {
     case (Nil, ts) => ts
     case (ts, Nil) => ts
@@ -73,18 +63,6 @@ trait BinomialHeap extends Heap {
       if (ord.lteq(root(t),x)) root(t) else x
   }
   override def deleteMin(ts: H) = ts match {
-    case Nil => throw new NoSuchElementException("delete min of empty heap")
-    case t::ts =>
-      def getMin(t: Node, ts: H): (Node, H) = ts match {
-        case Nil => (t, Nil)
-        case tp::tsp =>
-          val (tq,tsq) = getMin(tp, tsp)
-          if (ord.lteq(root(t),root(tq))) (t,ts) else (tq,t::tsq)
-      }
-      val (Node(_,_,c),tsq) = getMin(t, ts)
-      meld(c.reverse, tsq)
-  }
-  override def deleteMinOrig(ts: H) = ts match {
     case Nil => throw new NoSuchElementException("delete min of empty heap")
     case t::ts =>
       def getMin(t: Node, ts: H): (Node, H) = ts match {

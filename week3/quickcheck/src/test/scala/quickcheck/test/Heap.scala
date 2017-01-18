@@ -11,24 +11,16 @@ trait BinomialHeap extends quickcheck.Heap {
   protected def rank(t: Node) = t.r
   protected def link(t1: Node, t2: Node): Node = // t1.r==t2.r
     if (ord.lteq(t1.x,t2.x)) Node(t1.x, t1.r+1, t2::t1.c) else Node(t2.x, t2.r+1, t1::t2.c)
-  protected def linkOrig(t1: Node, t2: Node): Node = // t1.r==t2.r
-    if (ord.lteq(t1.x,t2.x)) Node(t1.x, t1.r+1, t2::t1.c) else Node(t2.x, t2.r+1, t1::t2.c)
   protected def ins(t: Node, ts: H): H = ts match {
     case Nil => List(t)
     case tp::ts => // t.r<=tp.r
       if (t.r<tp.r) t::tp::ts else ins(link(t, tp), ts)
-  }
-  protected def insOrig(t: Node, ts: H): H = ts match {
-    case Nil => List(t)
-    case tp::ts => // t.r<=tp.r
-      if (t.r<tp.r) t::tp::ts else insOrig(linkOrig(t, tp), ts)
   }
 
   override def empty = Nil
   override def isEmpty(ts: H) = ts.isEmpty
 
   override def insert(x: A, ts: H) = ins(Node(x,0,Nil), ts)
-  override def insertOrig(x: A, ts: H) = insOrig(Node(x,0,Nil), ts)
   override def meld(ts1: H, ts2: H) = (ts1, ts2) match {
     case (Nil, ts) => ts
     case (ts, Nil) => ts
@@ -46,18 +38,6 @@ trait BinomialHeap extends quickcheck.Heap {
       if (ord.lteq(root(t),x)) root(t) else x
   }
   override def deleteMin(ts: H) = ts match {
-    case Nil => throw new NoSuchElementException("delete min of empty heap")
-    case t::ts =>
-      def getMin(t: Node, ts: H): (Node, H) = ts match {
-        case Nil => (t, Nil)
-        case tp::tsp =>
-          val (tq,tsq) = getMin(tp, tsp)
-          if (ord.lteq(root(t),root(tq))) (t,ts) else (tq,t::tsq)
-      }
-      val (Node(_,_,c),tsq) = getMin(t, ts)
-      meld(c.reverse, tsq)
-  }
-  override def deleteMinOrig(ts: H) = ts match {
     case Nil => throw new NoSuchElementException("delete min of empty heap")
     case t::ts =>
       def getMin(t: Node, ts: H): (Node, H) = ts match {
